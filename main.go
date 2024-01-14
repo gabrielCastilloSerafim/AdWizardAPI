@@ -19,7 +19,7 @@ func main() {
 		port = "3000"
 	}
 
-	log.Fatal(app.Listen("0.0.0.0" + port))
+	log.Fatal(app.Listen("0.0.0.0:" + port))
 }
 
 func handleGetRequest(c *fiber.Ctx) error {
