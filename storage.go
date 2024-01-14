@@ -26,16 +26,30 @@ func setupDatabase() {
 		panic(err)
 	}
 
-	coll := client.Database("sample_mflix").Collection("movies")
+	ctx := context.Background()
+	collection := client.Database("test").Collection("events")
 
-	title := "Back to the Future"
+	cursor, err := collection.Find(ctx, bson.M{})
+	if err != nil {
+		log.Panic(err)
+	}
 
-	var result bson.M
+	var campaings []Campaing
 
-	err = coll.FindOne(context.TODO(), bson.D{{"title", title}}).Decode(&result)
+	err = cursor.All(ctx, &campaings)
+	if err != nil {
+		log.Panic(err)
+	}
+
+	out, err := json.MarshalIndent(campaings, " ", " ")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Println("Result:", string(out))
 
 	if err == mongo.ErrNoDocuments {
-		fmt.Printf("No document was found with the title %s\n", title)
+		fmt.Println("No document named: events")
 		return
 	}
 
@@ -43,11 +57,10 @@ func setupDatabase() {
 		panic(err)
 	}
 
-	jsonData, err := json.MarshalIndent(result, "", "    ")
-
+	jsonData, err := json.MarshalIndent(campaings, "", "    ")
 	if err != nil {
 		panic(err)
 	}
 
-	fmt.Printf("%s\n", jsonData)
+	log.Printf("%s\n", jsonData)
 }
