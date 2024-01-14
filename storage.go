@@ -3,10 +3,10 @@ package main
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"log"
 	"os"
 
+	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -14,18 +14,34 @@ import (
 
 func setupDatabase() {
 
-	uri := os.Getenv("MONGO_PRIVATE_URL")
+	var uri string
 
-	if uri == "" {
-		log.Fatal("You must set your 'MONGO_PRIVATE_URL'")
+	if os.Getenv("RAILWAY") == "TRUE" {
+
+		uri = os.Getenv("MONGO_PRIVATE_URL")
+		if uri == "" {
+			log.Fatal("You must set your 'MONGO_PRIVATE_URL'")
+		}
+	} else {
+
+		err := godotenv.Load(".env")
+		if err != nil {
+			log.Fatalf("Error loading environment variables file")
+		}
+
+		uri = os.Getenv("MONGO_DB_URI_FROM_LOCAL")
+		if uri == "" {
+			log.Fatal("You must set your 'MONGO_PRIVATE_URL'")
+		}
 	}
 
+	// Get client
 	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(uri))
-
 	if err != nil {
 		panic(err)
 	}
 
+	// Test retreiving some data
 	ctx := context.Background()
 	collection := client.Database("test").Collection("events")
 
@@ -41,26 +57,10 @@ func setupDatabase() {
 		log.Panic(err)
 	}
 
-	out, err := json.MarshalIndent(campaings, " ", " ")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	log.Println("Result:", string(out))
-
-	if err == mongo.ErrNoDocuments {
-		fmt.Println("No document named: events")
-		return
-	}
-
-	if err != nil {
-		panic(err)
-	}
-
 	jsonData, err := json.MarshalIndent(campaings, "", "    ")
 	if err != nil {
 		panic(err)
 	}
 
-	log.Printf("%s\n", jsonData)
+	log.Default().Printf("%s\n", jsonData)
 }
