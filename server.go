@@ -36,6 +36,8 @@ func setupMiddleWares(app *fiber.App) {
 
 func setupRoutes(app *fiber.App) {
 	app.Get("/helloLosPibes", handleHelloLosPibes)
+	app.Get("/ping", handlePing)
+	app.Get("/store", handleStoreRedirect)
 	app.Post("/campaing", handleCampaingEvent)
 }
 
@@ -52,6 +54,14 @@ func handleCampaingEvent(c *fiber.Ctx) error {
 	log.Default().Println(campaing.CampaingId)
 
 	return c.Status(fiber.StatusOK).JSON(campaing)
+}
+
+func handlePing(c *fiber.Ctx) error {
+	return nil
+}
+
+func handleStoreRedirect(c *fiber.Ctx) error {
+	return c.Redirect("https://apps.apple.com/app/group-task-")
 }
 
 func handleHelloLosPibes(c *fiber.Ctx) error {
