@@ -61,7 +61,7 @@ func handlePing(c *fiber.Ctx) error {
 }
 
 func handleStoreRedirect(c *fiber.Ctx) error {
-	return c.Redirect("https://apps.apple.com/app/group-task-")
+	return c.Redirect("https://apps.apple.com/es/app/group-task-manager/id6444686521")
 }
 
 func handleHelloLosPibes(c *fiber.Ctx) error {
