@@ -57,7 +57,10 @@ func handleCampaingEvent(c *fiber.Ctx) error {
 }
 
 func handlePing(c *fiber.Ctx) error {
-	log.Default().Printf("Headers: %v", c.GetReqHeaders())
+	// log.Default().Printf("Headers: %v", c.GetReqHeaders())
+	headers := c.GetReqHeaders()
+	ip := headers["X-Forwarded-For"]
+	log.Default().Printf("%v", ip)
 	return nil
 }
 
