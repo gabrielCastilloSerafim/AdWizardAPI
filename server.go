@@ -61,6 +61,7 @@ func handlePing(c *fiber.Ctx) error {
 }
 
 func handleStoreRedirect(c *fiber.Ctx) error {
+	log.Default().Printf("Headers: %v", c.GetReqHeaders())
 	return c.Redirect("https://apps.apple.com/es/app/group-task-manager/id6444686521")
 }
 
