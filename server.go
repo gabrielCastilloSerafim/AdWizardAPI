@@ -57,6 +57,7 @@ func handleCampaingEvent(c *fiber.Ctx) error {
 }
 
 func handlePing(c *fiber.Ctx) error {
+	log.Default().Printf("Headers: %v", c.GetReqHeaders())
 	return nil
 }
 
