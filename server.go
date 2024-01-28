@@ -27,8 +27,8 @@ func startServer(mongoClient *mongo.Client) {
 
 	// Routes
 	app.Post("/campaign", makeHTTPHandleFunc(handleCreateCampaign, mongoClient))
-	app.Get("/campaign/:campaignId", makeHTTPHandleFunc(handleStoreRedirect, mongoClient))
 	app.Get("/campaign", makeHTTPHandleFunc(handleGetAllCampaigns, mongoClient))
+	app.Get("/store/:campaignId", makeHTTPHandleFunc(handleStoreRedirect, mongoClient))
 	app.Post("/event", makeHTTPHandleFunc(handleCreateEvent, mongoClient))
 	app.Get("/event", makeHTTPHandleFunc(handleGetAllEvents, mongoClient))
 	app.Get("/appuser", makeHTTPHandleFunc(handleGetAllAppUsers, mongoClient))
@@ -59,7 +59,7 @@ func handleCreateCampaign(c *fiber.Ctx, mongoClient *mongo.Client) error {
 		return err
 	}
 	// Generate and send URL to be used in campaign
-	campaignURL := fmt.Sprintf("https://adwizardapi-production.up.railway.app/campaign/%v", campaignId)
+	campaignURL := fmt.Sprintf("https://adwizardapi-production.up.railway.app/store/%v", campaignId)
 	response := fiber.Map{
 		"campaignURL": campaignURL,
 	}
