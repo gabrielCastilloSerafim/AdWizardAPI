@@ -130,7 +130,8 @@ func handlePing(c *fiber.Ctx, mongoClient *mongo.Client) error {
 	}
 	// Send back the userId
 	response := fiber.Map{
-		"userId": appUser.Id.Hex(),
+		"userId":     appUser.Id.Hex(),
+		"campaignId": appUser.CampaignId,
 	}
 	return c.JSON(response)
 }
