@@ -1,6 +1,6 @@
 package main
 
 func main() {
-	setupDatabase()
-	startServer()
+	mongoClient := createDatabase()
+	startServer(mongoClient)
 }
