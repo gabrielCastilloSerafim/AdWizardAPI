@@ -23,10 +23,10 @@ func HandlePing(c *fiber.Ctx, mongoClient *mongo.Client) error {
 		log.Default().Println(userMatch)
 	} else {
 		log.Default().Println("Could not find user ip from request header")
-		// only used to test with localhost, `remove later``
+		// only used to test with localhost, `remove later`
 		// userCollection := mongoClient.Database("production").Collection("AppUser")
 		// userMatch := userCollection.FindOne(ctx, bson.M{"userIp": "localhost"})
-		// userMatch.Decode(user)
+		// userMatch.Decode(appUser)
 	}
 	// Create and store an download event
 	downloadEvent := new(models.Event)

@@ -11,6 +11,6 @@ func SetupEventRoutes(app *fiber.App, mongoClient *mongo.Client) {
 
 	app.Post("/event", utils.MakeHTTPHandleFunc(controllers.HandleCreateEvent, mongoClient))
 	app.Get("/event", utils.MakeHTTPHandleFunc(controllers.HandleGetAllEvents, mongoClient))
-	app.Get("/event/:campaignId", utils.MakeHTTPHandleFunc(controllers.HandleGetEventByCampaignId, mongoClient))
 	app.Get("/event/ping", utils.MakeHTTPHandleFunc(controllers.HandlePing, mongoClient))
+	app.Get("/event/:campaignId", utils.MakeHTTPHandleFunc(controllers.HandleGetEventByCampaignId, mongoClient))
 }
