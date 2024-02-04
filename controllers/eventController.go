@@ -20,7 +20,6 @@ func HandlePing(c *fiber.Ctx, mongoClient *mongo.Client) error {
 		userCollection := mongoClient.Database("production").Collection("AppUser")
 		userMatch := userCollection.FindOne(ctx, bson.M{"userIp": ip[0]})
 		userMatch.Decode(appUser)
-		log.Default().Println(userMatch)
 	} else {
 		log.Default().Println("Could not find user ip from request header")
 		// only used to test with localhost, `remove later`
@@ -94,4 +93,14 @@ func HandleGetEventByCampaignId(c *fiber.Ctx, mongoClient *mongo.Client) error {
 		return err
 	}
 	return c.JSON(events)
+}
+
+func HandleDeleteAllEvents(c *fiber.Ctx, mongoClient *mongo.Client) error {
+	ctx := context.Background()
+	collection := mongoClient.Database("production").Collection("AppUser")
+	_, err := collection.DeleteMany(ctx, bson.M{})
+	if err != nil {
+		return err
+	}
+	return c.SendString("All AppUsers Deleted")
 }

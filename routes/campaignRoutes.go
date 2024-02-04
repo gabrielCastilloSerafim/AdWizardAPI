@@ -11,5 +11,6 @@ func SetupCampaignRoutes(app *fiber.App, mongoClient *mongo.Client) {
 
 	app.Post("/campaign", utils.MakeHTTPHandleFunc(controllers.HandleCreateCampaign, mongoClient))
 	app.Get("/campaign", utils.MakeHTTPHandleFunc(controllers.HandleGetAllCampaigns, mongoClient))
+	app.Delete("/campaign", utils.MakeHTTPHandleFunc(controllers.HandleDeleteAllCampaigns, mongoClient))
 	app.Get("/campaign/redirect/:campaignId", utils.MakeHTTPHandleFunc(controllers.HandleStoreRedirect, mongoClient))
 }
