@@ -85,10 +85,10 @@ func HandleGetAllCampaigns(c *fiber.Ctx, mongoClient *mongo.Client) error {
 
 func HandleDeleteAllCampaigns(c *fiber.Ctx, mongoClient *mongo.Client) error {
 	ctx := context.Background()
-	collection := mongoClient.Database("production").Collection("AppUser")
+	collection := mongoClient.Database("production").Collection("Campaign")
 	_, err := collection.DeleteMany(ctx, bson.M{})
 	if err != nil {
 		return err
 	}
-	return c.SendString("All AppUsers Deleted")
+	return c.SendString("All Campaigns Deleted")
 }

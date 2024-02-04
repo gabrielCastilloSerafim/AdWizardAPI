@@ -97,10 +97,10 @@ func HandleGetEventByCampaignId(c *fiber.Ctx, mongoClient *mongo.Client) error {
 
 func HandleDeleteAllEvents(c *fiber.Ctx, mongoClient *mongo.Client) error {
 	ctx := context.Background()
-	collection := mongoClient.Database("production").Collection("AppUser")
+	collection := mongoClient.Database("production").Collection("Event")
 	_, err := collection.DeleteMany(ctx, bson.M{})
 	if err != nil {
 		return err
 	}
-	return c.SendString("All AppUsers Deleted")
+	return c.SendString("All Events Deleted")
 }
