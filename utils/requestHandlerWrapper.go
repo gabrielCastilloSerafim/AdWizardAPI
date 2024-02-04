@@ -1,4 +1,4 @@
-package main
+package utils
 
 import (
 	"github.com/gofiber/fiber/v2"
@@ -9,7 +9,7 @@ type serverFuncWithMongoClient func(c *fiber.Ctx, mongoClient *mongo.Client) err
 type fiberHandlerFunction func(c *fiber.Ctx) error
 
 // Handler functions wrapper
-func makeHTTPHandleFunc(myServerFunc serverFuncWithMongoClient, mongoClient *mongo.Client) fiberHandlerFunction {
+func MakeHTTPHandleFunc(myServerFunc serverFuncWithMongoClient, mongoClient *mongo.Client) fiberHandlerFunction {
 	return func(c *fiber.Ctx) error {
 		err := myServerFunc(c, mongoClient)
 		if err != nil {
