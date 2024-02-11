@@ -15,13 +15,13 @@ func (db MongoStorage) CreateEvent(event *models.Event) error {
 	return nil
 }
 
-func (db MongoStorage) CreateCampaign(campaign *models.Campaign) (*string, error) {
+func (db MongoStorage) CreateCampaign(campaign *models.Campaign) (string, error) {
 	insertResult, err := db.CampaignCollection.InsertOne(*db.Context, campaign)
 	campaignId := (insertResult.InsertedID.(primitive.ObjectID)).Hex()
 	if err != nil {
-		return nil, errors.New("error creating campaign in database")
+		return "", errors.New("error creating campaign in database")
 	}
-	return &campaignId, nil
+	return campaignId, nil
 }
 
 func (db MongoStorage) CreateAppUser(appUser *models.AppUser) error {

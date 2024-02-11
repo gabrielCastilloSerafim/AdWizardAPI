@@ -29,7 +29,7 @@ type StorageInterface interface {
 	GetCampaignById(campaignId string) (string, error)
 	// Create
 	CreateEvent(event *models.Event) error
-	CreateCampaign(campaign *models.Campaign) (*string, error)
+	CreateCampaign(campaign *models.Campaign) (string, error)
 	CreateAppUser(appUser *models.AppUser) error
 	// Update
 }

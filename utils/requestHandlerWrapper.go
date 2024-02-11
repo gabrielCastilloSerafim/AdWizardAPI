@@ -14,7 +14,7 @@ func MakeHTTPHandleFunc(myServerFunc serverFuncWithMongoClient, db storage.Stora
 		err := myServerFunc(c, db)
 		if err != nil {
 			response := fiber.Map{
-				"error": err,
+				"error": err.Error(),
 			}
 			return c.JSON(response)
 		}
