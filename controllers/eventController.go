@@ -1,44 +1,39 @@
 package controllers
 
 import (
-	"context"
-	"log"
-
 	"github.com/gabrielCastilloSerafim/AdWizardAPI/models"
+	"github.com/gabrielCastilloSerafim/AdWizardAPI/storage"
 	"github.com/gofiber/fiber/v2"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func HandlePing(c *fiber.Ctx, mongoClient *mongo.Client) error {
+func HandlePing(c *fiber.Ctx, db storage.StorageInterface) error {
 	// Get IP "If localhost this field will arrive empty"
 	ip := c.GetReqHeaders()["X-Forwarded-For"]
 	// Perform match from ip
 	appUser := new(models.AppUser)
-	ctx := context.Background()
 	if len(ip) > 0 {
-		userCollection := mongoClient.Database("production").Collection("AppUser")
-		userMatch := userCollection.FindOne(ctx, bson.M{"userIp": ip[0]})
-		userMatch.Decode(appUser)
+		err := db.GetAppUserWithIp(ip[0], appUser)
+		if err != nil {
+			return err
+		}
 	} else {
-		log.Default().Println("Could not find user ip from request header")
-		// only used to test with localhost, `remove later`
-		// userCollection := mongoClient.Database("production").Collection("AppUser")
-		// userMatch := userCollection.FindOne(ctx, bson.M{"userIp": "localhost"})
-		// userMatch.Decode(appUser)
+		err := db.GetAppUserWithIp("localhost", appUser)
+		if err != nil {
+			return err
+		}
 	}
-	// Create and store an download event
-	downloadEvent := new(models.Event)
-	downloadEvent.CampaignId = appUser.CampaignId
-	downloadEvent.UserId = appUser.Id.Hex()
-	downloadEvent.Name = "download"
-	eventCollection := mongoClient.Database("production").Collection("Event")
-	_, err := eventCollection.InsertOne(ctx, downloadEvent)
+	// Create event
+	downloadEvent := models.Event{
+		CampaignId: appUser.CampaignId,
+		UserId:     appUser.Id.Hex(),
+		Name:       "download",
+	}
+	// Save event to database
+	err := db.CreateEvent(&downloadEvent)
 	if err != nil {
-		log.Default().Printf("Error inserting user into db: %v", err)
 		return err
 	}
-	// Send back the userId
+	// Send response
 	response := fiber.Map{
 		"userId":     appUser.Id.Hex(),
 		"campaignId": appUser.CampaignId,
@@ -46,7 +41,7 @@ func HandlePing(c *fiber.Ctx, mongoClient *mongo.Client) error {
 	return c.JSON(response)
 }
 
-func HandleCreateEvent(c *fiber.Ctx, mongoClient *mongo.Client) error {
+func HandleCreateEvent(c *fiber.Ctx, db storage.StorageInterface) error {
 	// Parse request body
 	event := new(models.Event)
 	err := c.BodyParser(event)
@@ -54,51 +49,32 @@ func HandleCreateEvent(c *fiber.Ctx, mongoClient *mongo.Client) error {
 		return err
 	}
 	// Save to database
-	ctx := context.Background()
-	eventCollection := mongoClient.Database("production").Collection("Event")
-	_, err = eventCollection.InsertOne(ctx, event)
+	err = db.CreateEvent(event)
 	if err != nil {
-		log.Default().Printf("Error inserting user into db: %v", err)
 		return err
 	}
 	return nil
 }
 
-func HandleGetAllEvents(c *fiber.Ctx, mongoClient *mongo.Client) error {
-	ctx := context.Background()
-	collection := mongoClient.Database("production").Collection("Event")
-	cursor, err := collection.Find(ctx, bson.M{})
-	if err != nil {
-		return err
-	}
-	var events []models.Event
-	err = cursor.All(ctx, &events)
+func HandleGetAllEvents(c *fiber.Ctx, db storage.StorageInterface) error {
+	events, err := db.GetAllEvents()
 	if err != nil {
 		return err
 	}
 	return c.JSON(events)
 }
 
-func HandleGetEventByCampaignId(c *fiber.Ctx, mongoClient *mongo.Client) error {
+func HandleGetEventByCampaignId(c *fiber.Ctx, db storage.StorageInterface) error {
 	campaignId := c.Params("campaignId")
-	ctx := context.Background()
-	collection := mongoClient.Database("production").Collection("Event")
-	cursor, err := collection.Find(ctx, bson.M{"campaignId": campaignId})
+	event, err := db.GetEventByCampaignId(campaignId)
 	if err != nil {
 		return err
 	}
-	var events []models.Event
-	err = cursor.All(ctx, &events)
-	if err != nil {
-		return err
-	}
-	return c.JSON(events)
+	return c.JSON(event)
 }
 
-func HandleDeleteAllEvents(c *fiber.Ctx, mongoClient *mongo.Client) error {
-	ctx := context.Background()
-	collection := mongoClient.Database("production").Collection("Event")
-	_, err := collection.DeleteMany(ctx, bson.M{})
+func HandleDeleteAllEvents(c *fiber.Ctx, db storage.StorageInterface) error {
+	err := db.DeleteAllEvents()
 	if err != nil {
 		return err
 	}

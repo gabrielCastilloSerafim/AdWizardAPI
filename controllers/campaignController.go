@@ -1,18 +1,14 @@
 package controllers
 
 import (
-	"context"
 	"fmt"
-	"log"
 
 	"github.com/gabrielCastilloSerafim/AdWizardAPI/models"
+	"github.com/gabrielCastilloSerafim/AdWizardAPI/storage"
 	"github.com/gofiber/fiber/v2"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func HandleCreateCampaign(c *fiber.Ctx, mongoClient *mongo.Client) error {
+func HandleCreateCampaign(c *fiber.Ctx, db storage.StorageInterface) error {
 	// Parse req body into campaign object
 	campaign := new(models.Campaign)
 	err := c.BodyParser(campaign)
@@ -20,10 +16,7 @@ func HandleCreateCampaign(c *fiber.Ctx, mongoClient *mongo.Client) error {
 		return err
 	}
 	// Save to database
-	ctx := context.Background()
-	collection := mongoClient.Database("production").Collection("Campaign")
-	insertResult, err := collection.InsertOne(ctx, campaign)
-	campaignId := (insertResult.InsertedID.(primitive.ObjectID)).Hex()
+	campaignId, err := db.CreateCampaign(campaign)
 	if err != nil {
 		return err
 	}
@@ -35,7 +28,7 @@ func HandleCreateCampaign(c *fiber.Ctx, mongoClient *mongo.Client) error {
 	return c.JSON(response)
 }
 
-func HandleStoreRedirect(c *fiber.Ctx, mongoClient *mongo.Client) error {
+func HandleStoreRedirect(c *fiber.Ctx, db storage.StorageInterface) error {
 	// Get IP "If localhost this field will arrive empty" and campaign Id
 	ip := c.GetReqHeaders()["X-Forwarded-For"]
 	campaignId := c.Params("campaignId")
@@ -45,50 +38,33 @@ func HandleStoreRedirect(c *fiber.Ctx, mongoClient *mongo.Client) error {
 	if len(ip) > 0 {
 		appUser.UserIp = ip[0]
 	} else {
-		appUser.UserIp = "localhost" // Only using this to test in localhost, `remove later``
-		log.Default().Println("Could not find user ip from request header")
+		appUser.UserIp = "localhost"
 	}
 	// Store user
-	ctx := context.Background()
-	appUserCollection := mongoClient.Database("production").Collection("AppUser")
-	_, err := appUserCollection.InsertOne(ctx, appUser)
+	err := db.CreateAppUser(appUser)
 	if err != nil {
-		log.Default().Printf("Error inserting user into db: %v", err)
 		return err
 	}
 	// Find store link and redirect
-	objId, err := primitive.ObjectIDFromHex(campaignId)
+	storeLink, err := db.GetCampaignById(campaignId)
 	if err != nil {
 		return err
 	}
-	campaignCollection := mongoClient.Database("production").Collection("Campaign")
-	campaignMatch := campaignCollection.FindOne(ctx, bson.M{"_id": objId})
-	campaign := new(models.Campaign)
-	campaignMatch.Decode(campaign)
-	return c.Redirect(campaign.AppStoreLink)
+	return c.Redirect(storeLink)
 }
 
-func HandleGetAllCampaigns(c *fiber.Ctx, mongoClient *mongo.Client) error {
-	ctx := context.Background()
-	collection := mongoClient.Database("production").Collection("Campaign")
-	cursor, err := collection.Find(ctx, bson.M{})
-	if err != nil {
-		return err
-	}
-	var campaings []models.Campaign
-	err = cursor.All(ctx, &campaings)
+func HandleGetAllCampaigns(c *fiber.Ctx, db storage.StorageInterface) error {
+	campaings, err := db.GetAllCampaigns()
 	if err != nil {
 		return err
 	}
 	return c.JSON(campaings)
 }
 
-func HandleDeleteAllCampaigns(c *fiber.Ctx, mongoClient *mongo.Client) error {
-	ctx := context.Background()
-	collection := mongoClient.Database("production").Collection("Campaign")
-	_, err := collection.DeleteMany(ctx, bson.M{})
+func HandleDeleteAllCampaigns(c *fiber.Ctx, db storage.StorageInterface) error {
+	err := db.DeleteAllCampaigns()
 	if err != nil {
 		return err
 	}
-	return c.SendString("All Campaigns Deleted")
+	return c.SendString("All campaigns deleted")
 }
