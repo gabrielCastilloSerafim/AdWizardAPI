@@ -22,7 +22,7 @@ type StorageInterface interface {
 	DeleteAllCampaigns() error
 	// Read
 	GetAllAppUsers() ([]models.AppUser, error)
-	GetAppUserWithIp(ip string, appUser *models.AppUser) error
+	GetAppUserWithIp(ip string) (*models.AppUser, error)
 	GetAllEvents() ([]models.Event, error)
 	GetEventByCampaignId(campaignId string) (*models.Event, error)
 	GetAllCampaigns() ([]models.Campaign, error)

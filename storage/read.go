@@ -2,6 +2,7 @@ package storage
 
 import (
 	"errors"
+	"log"
 
 	"github.com/gabrielCastilloSerafim/AdWizardAPI/models"
 	"go.mongodb.org/mongo-driver/bson"
@@ -21,13 +22,22 @@ func (db MongoStorage) GetAllAppUsers() ([]models.AppUser, error) {
 	return appUsers, nil
 }
 
-func (db MongoStorage) GetAppUserWithIp(ip string, appUser *models.AppUser) error {
-	userMatch := db.AppUserCollection.FindOne(*db.Context, bson.M{"userIp": ip})
-	userMatch.Decode(appUser)
-	if userMatch != nil {
-		return errors.New("could not find app user match for given id")
+func (db MongoStorage) GetAppUserWithIp(ip string) (*models.AppUser, error) {
+	log.Default().Printf("GOT IP PARAM: %v\n", ip)
+	cursor, err := db.AppUserCollection.Find(*db.Context, bson.M{"userIp": ip})
+	if err != nil {
+		return nil, err
 	}
-	return nil
+	var users []models.AppUser
+	err = cursor.All(*db.Context, &users)
+	log.Default().Printf("USER RESULTS: %v\n", users)
+	if err != nil {
+		return nil, err
+	}
+	if len(users) == 0 {
+		return nil, errors.New("could not find app user match for given id")
+	}
+	return &users[0], nil
 }
 
 func (db MongoStorage) GetAllEvents() ([]models.Event, error) {
