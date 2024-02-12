@@ -1,6 +1,8 @@
 package controllers
 
 import (
+	"log"
+
 	"github.com/gabrielCastilloSerafim/AdWizardAPI/models"
 	"github.com/gabrielCastilloSerafim/AdWizardAPI/storage"
 	"github.com/gofiber/fiber/v2"
@@ -9,6 +11,7 @@ import (
 func HandlePing(c *fiber.Ctx, db storage.StorageInterface) error {
 	// Get IP "If localhost this field will arrive empty"
 	ip := c.GetReqHeaders()["X-Forwarded-For"]
+	log.Default().Printf("IP RECEIVED -> %v\n", ip[0])
 	// Perform match from ip
 	appUser := new(models.AppUser)
 	if len(ip) > 0 {
